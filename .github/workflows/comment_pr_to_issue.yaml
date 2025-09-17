@@ -28,7 +28,7 @@ jobs:
           # Create the issue with full comment body
           gh issue create \
             --title "$title" \
-            --body "### From PR comment\n\n${{ github.event.comment.body }}\n\n---\n🔗 [View original comment](${{ github.event.comment.html_url }})" \
+            --body "### From PR comment<br /><br />${{ github.event.comment.body }}<br /><br />---<br />🔗 [View original comment](${{ github.event.comment.html_url }})" \
             --repo $GITHUB_REPOSITORY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
