@@ -1,0 +1,34 @@
+name: PR Comment to Issue
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  create-issue:
+    if: github.event.issue.pull_request != null # run only on PR comments
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: read
+
+    steps:
+      - name: Create Issue from Comment
+        if: contains(github.event.comment.body, 'BUG:') || contains(github.event.comment.body, 'TODO:') || contains(github.event.comment.body, 'ISSUE:')
+        run: |
+          # Extract title from comment (text after the first keyword)
+          comment="${{ github.event.comment.body }}"
+          title=$(echo "$comment" | grep -Eo '^(BUG:|TODO:|ISSUE:).*' | cut -d':' -f2- | xargs)
+
+          # Fallback title if nothing extracted
+          if [ -z "$title" ]; then
+            title="Issue from PR comment"
+          fi
+
+          # Create the issue with full comment body
+          gh issue create \
+            --title "$title" \
+            --body "### From PR comment\n\n${{ github.event.comment.body }}\n\n---\n🔗 [View original comment](${{ github.event.comment.html_url }})" \
+            --repo $GITHUB_REPOSITORY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
